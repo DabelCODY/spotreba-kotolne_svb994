@@ -1,0 +1,5 @@
+{
+  "name": "Kalkulačka nákladov kotolne",
+  "description": "Aplikácia na výpočet nákladov na teplo a energiu pre kotolňu bytového domu. Umožňuje zadávať spotrebu plynu, elektriny, vody a ďalších služieb a vypočíta celkový energetický výkon a náklady v GJ, kWh a EUR. Aplikácia tiež archivuje dáta z predchádzajúcich rokov.",
+  "requestFramePermissions": []
+}
