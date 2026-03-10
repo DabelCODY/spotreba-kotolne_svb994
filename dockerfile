@@ -1,23 +1,19 @@
-                                                                                                                           # Základný obraz s Pythonom
-FROM python:3.10-slim
-
-# Nastavenie pracovného prieèinka vnútri kontajnera
+# 1. Krok: Build aplikácie
+FROM node:18-alpine AS build
 WORKDIR /app
 
-# Inštalácia systémových závislostí
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Skopírujeme súbory pre npm
+COPY package*.json ./
+RUN npm install
 
-# Skopírovanie zoznamu knižníc a ich inštalácia
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Skopírovanie celého kódu aplikácie
+# Skopírujeme kód a zostavíme ho
 COPY . .
+RUN npm run build
 
-# Port, na ktorom beží Streamlit
-EXPOSE 8501
+# 2. Krok: Servovanie cez Nginx
+FROM nginx:stable-alpine
+# Vite štandardne ukladá build do prieèinka 'dist'
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Príkaz na spustenie aplikácie (predpokladám, že tvoj hlavný súbor je app.py)
-ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
