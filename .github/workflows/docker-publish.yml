@@ -1,11 +1,12 @@
-                                                                               name: Build and Publish Docker Image
+name: Build and Publish Docker Image
 
 on:
   push:
-    branches: ["main"] # Spustí sa pri každom pushnutí do vetvy main
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
+  # Tu sme pridali force-lowercase pre názov obrazu
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -31,4 +32,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          # TENTO RIADOK JE K¼ÚÈOVÝ - zmení DabelCODY na dabelcody
+          tags: ghcr.io/${{ github.repository_owner }}/spotreba-kotolna:latest
+          # Vynútenie malých písmen v tagoch
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
