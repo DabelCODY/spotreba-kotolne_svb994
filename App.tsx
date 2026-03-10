@@ -5,7 +5,7 @@ import { ResultsDisplay } from './components/ResultsDisplay';
 import { ArchiveView } from './components/ArchiveView';
 import { CalculationData, CalculationArchive } from './types';
 import { calculateTotals } from './services/calculationService';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { fetchArchive, saveYearData } from './services/apiService';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 
@@ -118,24 +118,40 @@ const createDataFromPreviousYear = (prevData: CalculationData): CalculationData 
 
 
 const App: React.FC = () => {
-  const [archive, setArchive] = useLocalStorage<CalculationArchive>('boiler-room-calculator-archive', {});
-  const [currentYear, setCurrentYear] = useState<number>(() => {
-    const years = Object.keys(archive).map(Number);
-    return years.length > 0 ? Math.max(...years) : new Date().getFullYear() - 1;
-  });
+  const [archive, setArchive] = useState<CalculationArchive>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear() - 1);
 
-  const [currentData, setCurrentData] = useState<CalculationData>(() => {
-    return archive[currentYear] || createDefaultData(currentYear);
-  });
+  const [currentData, setCurrentData] = useState<CalculationData>(() => createDefaultData(currentYear));
+
+  // Fetch archive on mount
+  useEffect(() => {
+    const loadArchive = async () => {
+      const data = await fetchArchive();
+      setArchive(data);
+      
+      const years = Object.keys(data).map(Number);
+      if (years.length > 0) {
+        const latestYear = Math.max(...years);
+        setCurrentYear(latestYear);
+        setCurrentData(data[latestYear]);
+      }
+      setIsLoading(false);
+    };
+    loadArchive();
+  }, []);
 
   useEffect(() => {
-    setCurrentData(archive[currentYear] || createDefaultData(currentYear));
-  }, [currentYear, archive]);
+    if (!isLoading) {
+      setCurrentData(archive[currentYear] || createDefaultData(currentYear));
+    }
+  }, [currentYear, archive, isLoading]);
 
-  const handleDataChange = useCallback((updatedData: CalculationData) => {
+  const handleDataChange = useCallback(async (updatedData: CalculationData) => {
     setCurrentData(updatedData);
     setArchive(prev => ({ ...prev, [updatedData.year]: updatedData }));
-  }, [setArchive]);
+    await saveYearData(updatedData.year, updatedData);
+  }, []);
   
   const handleYearChange = (year: number) => {
     if(year > 1900 && year < 2100) {
@@ -143,7 +159,7 @@ const App: React.FC = () => {
     }
   };
   
-  const handleAddNewYear = () => {
+  const handleAddNewYear = async () => {
     const years = Object.keys(archive).map(Number);
     const latestYear = years.length > 0 ? Math.max(...years) : new Date().getFullYear() - 1;
     const newYear = latestYear + 1;
@@ -160,6 +176,7 @@ const App: React.FC = () => {
     // Check if new year already exists from manual input to prevent overwriting
     if (!archive[newYear]) {
       setArchive(prev => ({ ...prev, [newYear]: newData }));
+      await saveYearData(newYear, newData);
     }
     setCurrentYear(newYear);
   };
@@ -170,6 +187,14 @@ const App: React.FC = () => {
   };
 
   const results = useMemo(() => calculateTotals(currentData), [currentData]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100">
+        <div className="text-xl font-semibold text-slate-600 animate-pulse">Načítavam údaje...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">

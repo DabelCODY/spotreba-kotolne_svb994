@@ -2,6 +2,12 @@
 import React, { useState } from 'react';
 import type { CalculationData, ServiceCost, GasMeter, ElectricalConnection, ElectricitySubMeter, WaterSubMeter } from '../types';
 
+const InfoIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ml-1 text-slate-400 shrink-0 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
 interface InputFieldProps {
   label: string;
   unit: string;
@@ -10,9 +16,10 @@ interface InputFieldProps {
   name: string;
   type?: 'number' | 'text';
   integer?: boolean;
+  tooltip?: string;
 }
 
-const InputField: React.FC<InputFieldProps> = ({ label, unit, value, onChange, name, type = 'number', integer = false }) => {
+const InputField: React.FC<InputFieldProps> = ({ label, unit, value, onChange, name, type = 'number', integer = false, tooltip }) => {
   const getPaddingClass = (unitString: string) => {
     const len = unitString.length;
     if (len > 5) { // For '€/mesiac', 'kWh/m³'
@@ -25,8 +32,11 @@ const InputField: React.FC<InputFieldProps> = ({ label, unit, value, onChange, n
   };
 
   return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">{label}</label>
+    <div title={tooltip}>
+      <label htmlFor={name} className="flex items-center text-sm font-medium text-slate-700">
+        {label}
+        {tooltip && <InfoIcon />}
+      </label>
       <div className="mt-1 relative rounded-md shadow-sm">
         <input
           type={type}
@@ -360,13 +370,14 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
     <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Vstupné údaje pre výpočet</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" title="Zadajte rok, pre ktorý chcete robiť výpočet.">
             <input 
               type="number"
               value={currentYear}
               onChange={(e) => onYearChange(parseInt(e.target.value))}
               className="w-24 pl-3 pr-2 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white text-black"
             />
+            <InfoIcon />
             <button onClick={onAddNewYear} className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">+ Nový rok</button>
             <button onClick={onToggleLock} title={isLocked ? "Odomknúť rok" : "Zamknúť rok"} className={`p-2 rounded-md ${isLocked ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'} hover:bg-slate-200`}>
                 {isLocked ? 
@@ -378,7 +389,7 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
       </div>
       
       <div className="border-b border-slate-200 flex space-x-1">
-        {renderTabButton('gas', 'Plyn', <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10.156 2.33a.75.75 0 00-1.312 0C6.6 5.424 5.5 8.788 5.5 11.05c0 2.522 2.028 4.55 4.55 4.55s4.55-2.028 4.55-4.55c0-2.262-1.1-5.626-3.344-8.72z" /></svg>)}
+        {renderTabButton('gas', 'Plyn', <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M15.312 5.512a.75.75 0 01.14 1.05l-4.25 6.5a.75.75 0 01-1.22.14l-2.25-3.5a.75.75 0 01.2-1.033l4.25-3.5a.75.75 0 011.13.823zM8.688 8.488a.75.75 0 01-1.13-.823l4.25-3.5a.75.75 0 011.22.14l4.25 6.5a.75.75 0 01-.14 1.05l-4.25 3.5a.75.75 0 01-1.22-.14l-2.25-3.5a.75.75 0 01-.2-1.033z" clipRule="evenodd" /></svg>)}
         {renderTabButton('electricity', 'Elektrina', <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>)}
         {renderTabButton('water', 'Voda', <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a6 6 0 006-6c0-4.14-3.36-10-6-10S4 7.86 4 12a6 6 0 006 6z" /></svg>)}
         {renderTabButton('sumar', 'Sumár', <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11h14v2H2v-2z" /><path d="M2 5h14v2H2V5z" /><path d="M2 17h14v2H2v-2z" /></svg>)}
@@ -415,8 +426,8 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
               })}
               <div className="mt-4"><button onClick={addGasMeter} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:text-slate-400">+ Pridať merač (pri výmene)</button></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 mt-4 border-t">
-                  <InputField label="Prevod m³ na kWh" unit="kWh/m³" name="gas-kwh-m3" value={data.gasKwhPerM3} onChange={(v) => onUpdate({ ...data, gasKwhPerM3: v })} />
-                  <InputField label="Celková cena z faktúry" unit="€" name="gas-total-price" value={data.gas.totalPriceEUR} onChange={(v) => onUpdate({ ...data, gas: { ...data.gas, totalPriceEUR: v }})} />
+                  <InputField label="Prevod m³ na kWh" unit="kWh/m³" name="gas-kwh-m3" value={data.gasKwhPerM3} onChange={(v) => onUpdate({ ...data, gasKwhPerM3: v })} tooltip="Koeficient pre prepočet spotrebovaného objemu plynu v m³ na energiu v kWh. Zvyčajne sa nachádza na faktúre od dodávateľa plynu." />
+                  <InputField label="Celková cena z faktúry" unit="€" name="gas-total-price" value={data.gas.totalPriceEUR} onChange={(v) => onUpdate({ ...data, gas: { ...data.gas, totalPriceEUR: v }})} tooltip="Celková suma vrátane DPH za plyn za celé zúčtovacie obdobie (rok) podľa faktúry." />
               </div>
             </section>
 
@@ -426,16 +437,16 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                   <div className="p-4 bg-slate-50 rounded-md border space-y-4">
                       <h4 className="font-semibold text-slate-800">Ústredné kúrenie</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                          <InputField label="Počiatočný stav" unit="GJ" name="uk-start" value={data.ukTuvMeterReadings.ukStartGJ} onChange={(v) => handleUkTuvChange('ukStartGJ', v)} />
-                          <InputField label="Konečný stav" unit="GJ" name="uk-end" value={data.ukTuvMeterReadings.ukEndGJ} onChange={(v) => handleUkTuvChange('ukEndGJ', v)} />
+                          <InputField label="Počiatočný stav" unit="GJ" name="uk-start" value={data.ukTuvMeterReadings.ukStartGJ} onChange={(v) => handleUkTuvChange('ukStartGJ', v)} tooltip="Stav merača tepla pre ústredné kúrenie k 1. januáru daného roka." />
+                          <InputField label="Konečný stav" unit="GJ" name="uk-end" value={data.ukTuvMeterReadings.ukEndGJ} onChange={(v) => handleUkTuvChange('ukEndGJ', v)} tooltip="Stav merača tepla pre ústredné kúrenie k 31. decembru daného roka." />
                           <div><label className="block text-sm font-medium text-slate-700">Spotreba</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium text-sm h-[38px] flex items-center">{formatNumber(data.ukTuvMeterReadings.ukEndGJ - data.ukTuvMeterReadings.ukStartGJ)} GJ</div></div>
                       </div>
                   </div>
                    <div className="p-4 bg-slate-50 rounded-md border space-y-4">
                       <h4 className="font-semibold text-slate-800">Teplá úžitková voda</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                          <InputField label="Počiatočný stav" unit="GJ" name="tuv-start" value={data.ukTuvMeterReadings.tuvStartGJ} onChange={(v) => handleUkTuvChange('tuvStartGJ', v)} />
-                          <InputField label="Konečný stav" unit="GJ" name="tuv-end" value={data.ukTuvMeterReadings.tuvEndGJ} onChange={(v) => handleUkTuvChange('tuvEndGJ', v)} />
+                          <InputField label="Počiatočný stav" unit="GJ" name="tuv-start" value={data.ukTuvMeterReadings.tuvStartGJ} onChange={(v) => handleUkTuvChange('tuvStartGJ', v)} tooltip="Stav merača tepla pre teplú úžitkovú vodu k 1. januáru daného roka." />
+                          <InputField label="Konečný stav" unit="GJ" name="tuv-end" value={data.ukTuvMeterReadings.tuvEndGJ} onChange={(v) => handleUkTuvChange('tuvEndGJ', v)} tooltip="Stav merača tepla pre teplú úžitkovú vodu k 31. decembru daného roka." />
                           <div><label className="block text-sm font-medium text-slate-700">Spotreba</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium text-sm h-[38px] flex items-center">{formatNumber(data.ukTuvMeterReadings.tuvEndGJ - data.ukTuvMeterReadings.tuvStartGJ)} GJ</div></div>
                       </div>
                   </div>
@@ -445,8 +456,8 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
             <section className="space-y-4 pt-8 border-t">
               <h3 className="text-lg font-semibold text-indigo-700">Servis, revízie, opravy</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField label="Mandátna zmluva (mesačne)" unit="€/mesiac" name="mandate-contract" value={data.mandateContractMonthlyCost} onChange={(v) => onUpdate({ ...data, mandateContractMonthlyCost: v })} />
-                <InputField label="Fond Opráv (ročne)" unit="€/rok" name="repair-fund" value={data.repairFundAnnualCost} onChange={(v) => onUpdate({ ...data, repairFundAnnualCost: v })} />
+                <InputField label="Mandátna zmluva (mesačne)" unit="€/mesiac" name="mandate-contract" value={data.mandateContractMonthlyCost} onChange={(v) => onUpdate({ ...data, mandateContractMonthlyCost: v })} tooltip="Mesačná platba za správu a údržbu kotolne." />
+                <InputField label="Fond Opráv (ročne)" unit="€/rok" name="repair-fund" value={data.repairFundAnnualCost} onChange={(v) => onUpdate({ ...data, repairFundAnnualCost: v })} tooltip="Ročný príspevok do fondu opráv určený pre kotolňu." />
               </div>
               <div className="pt-4 mt-4 border-t"><h4 className="text-md font-semibold text-slate-800">Ďalšie položky</h4></div>
               <div className="space-y-3">
@@ -500,8 +511,11 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                                 <div className="mt-1 p-2 bg-slate-200 rounded-md text-slate-800 font-medium text-sm h-[38px] flex items-center">{new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR', minimumFractionDigits: 4 }).format(avgPrice)} / kWh</div>
                             </div>
                           </div>
-                          <div className="pt-4 border-t">
-                            <h4 className="text-md font-semibold text-slate-800">Podružné merače</h4>
+                          <div className="pt-4 border-t" title="Stavy podružných meračov na začiatku a na konci roka pre rozpočítanie spotreby na jednotlivé zariadenia (výťah, kotolňa, atď.).">
+                            <h4 className="text-md font-semibold text-slate-800 flex items-center">
+                                Podružné merače
+                                <InfoIcon/>
+                            </h4>
                             {conn.subMeters.map((sm, smIndex) => {
                               const consumption = (sm.endKWh || 0) - (sm.startKWh || 0);
                               return (
@@ -519,7 +533,7 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                         </div>
                       )
                     })}
-                    <div className="pt-6 mt-6 border-t"><h3 className="text-lg font-semibold text-indigo-700">Počet užívateľov</h3><div className="p-4 mt-2 border rounded-md space-y-4 bg-slate-50"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><InputField label="Počet užívateľov Vchod 23" unit="osôb" name="users-23" value={data.electricity.userCounts?.vchod23 || 0} onChange={(v) => handleUserCountChange('vchod23', v)} integer={true} /><InputField label="Počet užívateľov Vchod 25" unit="osôb" name="users-25" value={data.electricity.userCounts?.vchod25 || 0} onChange={(v) => handleUserCountChange('vchod25', v)} integer={true} /></div><div className="pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4 text-sm"><div><label className="block font-medium text-slate-700">Celkový počet užívateľov</label><div className="mt-1 p-2 bg-slate-200 rounded-md text-slate-800 font-bold h-[38px] flex items-center">{totalUsers} osôb</div></div><div><label className="block font-medium text-slate-700">Podiel Vchod 23</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium h-[38px] flex items-center">{percentage23} %</div></div><div><label className="block font-medium text-slate-700">Podiel Vchod 25</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium h-[38px] flex items-center">{percentage25} %</div></div></div></div></div>
+                    <div className="pt-6 mt-6 border-t"><h3 className="text-lg font-semibold text-indigo-700">Počet užívateľov</h3><div className="p-4 mt-2 border rounded-md space-y-4 bg-slate-50"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><InputField label="Počet užívateľov Vchod 23" unit="osôb" name="users-23" value={data.electricity.userCounts?.vchod23 || 0} onChange={(v) => handleUserCountChange('vchod23', v)} integer={true} tooltip="Počet osôb bývajúcich v danom vchode. Používa sa na pomerné rozpočítanie nákladov na spoločné priestory (napr. stojisko)." /><InputField label="Počet užívateľov Vchod 25" unit="osôb" name="users-25" value={data.electricity.userCounts?.vchod25 || 0} onChange={(v) => handleUserCountChange('vchod25', v)} integer={true} tooltip="Počet osôb bývajúcich v danom vchode. Používa sa na pomerné rozpočítanie nákladov na spoločné priestory (napr. stojisko)." /></div><div className="pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4 text-sm"><div><label className="block font-medium text-slate-700">Celkový počet užívateľov</label><div className="mt-1 p-2 bg-slate-200 rounded-md text-slate-800 font-bold h-[38px] flex items-center">{totalUsers} osôb</div></div><div><label className="block font-medium text-slate-700">Podiel Vchod 23</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium h-[38px] flex items-center">{percentage23} %</div></div><div><label className="block font-medium text-slate-700">Podiel Vchod 25</label><div className="mt-1 p-2 bg-slate-100 rounded-md text-slate-800 font-medium h-[38px] flex items-center">{percentage25} %</div></div></div></div></div>
                 </div>
             )}
             
@@ -528,6 +542,7 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                     {(data.electricity.connections || []).map((conn, connIndex) => {
                         const totalKWh = conn.monthlyReadings.reduce((sum, r) => sum + (r.kWh || 0), 0);
                         const totalEUR = conn.monthlyReadings.reduce((sum, r) => sum + (r.EUR || 0), 0);
+                        const tooltipText = "Zadajte mesačné hodnoty spotreby v kWh a ceny v EUR podľa faktúr od dodávateľa elektriny.";
                         return (
                         <div key={conn.id} className="p-4 border rounded-md space-y-4 bg-slate-50">
                             <h4 className="text-lg font-semibold text-indigo-700">{conn.name}</h4>
@@ -535,9 +550,9 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                                 <label htmlFor={`meter-number-${connIndex}`} className="block text-sm font-medium text-slate-700">Číslo merača</label>
                                 <input type="text" id={`meter-number-${connIndex}`} value={conn.meterNumber} onChange={e => handleElectricityChange(connIndex, 'meterNumber', e.target.value)} className="mt-1 block w-full md:w-1/2 border-slate-300 rounded-md shadow-sm sm:text-sm bg-white text-black" />
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" title={tooltipText}>
                                 <table className="min-w-full bg-white text-sm rounded-md">
-                                    <thead className="bg-slate-200"><tr><th className="px-2 py-2 text-center font-semibold text-slate-600">Mesiac</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Spotreba (kWh)</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Suma (€)</th></tr></thead>
+                                    <thead className="bg-slate-200"><tr><th className="px-2 py-2 text-center font-semibold text-slate-600 flex items-center justify-center">Mesiac <InfoIcon /></th><th className="px-2 py-2 text-left font-semibold text-slate-600">Spotreba (kWh)</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Suma (€)</th></tr></thead>
                                     <tbody>
                                         {conn.monthlyReadings.map((reading, rIdx) => (
                                             <tr key={rIdx} className="border-b last:border-0">
@@ -595,8 +610,8 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                         <div className="p-4 border rounded-md space-y-4 bg-slate-50">
                             <h4 className="text-lg font-semibold text-indigo-700">Hlavný merač vody</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <InputField label="Počiatočný stav" unit="m³" name="water-main-start" value={data.water.mainMeterStartM3} onChange={v => handleWaterPropertyChange('mainMeterStartM3', v)} />
-                                <InputField label="Konečný stav" unit="m³" name="water-main-end" value={data.water.mainMeterEndM3} onChange={v => handleWaterPropertyChange('mainMeterEndM3', v)} />
+                                <InputField label="Počiatočný stav" unit="m³" name="water-main-start" value={data.water.mainMeterStartM3} onChange={v => handleWaterPropertyChange('mainMeterStartM3', v)} tooltip="Stav hlavného vodomeru pre celý bytový dom na začiatku roka." />
+                                <InputField label="Konečný stav" unit="m³" name="water-main-end" value={data.water.mainMeterEndM3} onChange={v => handleWaterPropertyChange('mainMeterEndM3', v)} tooltip="Stav hlavného vodomeru pre celý bytový dom na konci roka." />
                                 <div><label className="block text-sm font-medium text-slate-700">Spotreba</label><div className="mt-1 p-2 bg-slate-200 rounded-md text-slate-800 font-bold h-[38px] flex items-center">{formatNumber(mainWaterConsumption)} m³</div></div>
                             </div>
                         </div>
@@ -626,8 +641,8 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                             <h4 className="text-lg font-semibold text-indigo-700">Namerané hodnoty z bytov</h4>
                             <p className="text-xs text-slate-500">Súčet nameraných hodnôt zo všetkých bytových meračov za rok.</p>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <InputField label="Spotreba Studená Voda (SV)" unit="m³" name="water-measured-sv" value={data.water.measuredConsumptionSV_m3} onChange={v => handleWaterPropertyChange('measuredConsumptionSV_m3', v)} />
-                                <InputField label="Spotreba Teplá Voda (TÚV)" unit="m³" name="water-measured-tuv" value={data.water.measuredConsumptionTUV_m3} onChange={v => handleWaterPropertyChange('measuredConsumptionTUV_m3', v)} />
+                                <InputField label="Spotreba Studená Voda (SV)" unit="m³" name="water-measured-sv" value={data.water.measuredConsumptionSV_m3} onChange={v => handleWaterPropertyChange('measuredConsumptionSV_m3', v)} tooltip="Súčet spotreby studenej vody (SV) zo všetkých bytových vodomerov za celý rok." />
+                                <InputField label="Spotreba Teplá Voda (TÚV)" unit="m³" name="water-measured-tuv" value={data.water.measuredConsumptionTUV_m3} onChange={v => handleWaterPropertyChange('measuredConsumptionTUV_m3', v)} tooltip="Súčet spotreby teplej úžitkovej vody (TÚV) zo všetkých bytových vodomerov za celý rok." />
                                 <div><label className="block text-sm font-medium text-slate-700">Súčet (SV + TÚV)</label><div className="mt-1 p-2 bg-slate-200 rounded-md text-slate-800 font-bold h-[38px] flex items-center">{formatNumber((data.water.measuredConsumptionSV_m3 || 0) + (data.water.measuredConsumptionTUV_m3 || 0))} m³</div></div>
                             </div>
                         </div>
@@ -656,7 +671,7 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
             {waterView === 'monthly' && (() => {
                 const totalM3 = (data.water.monthlyReadings || []).reduce((s, r) => s + (r.m3 || 0), 0);
                 const totalEUR = (data.water.monthlyReadings || []).reduce((s, r) => s + (r.EUR || 0), 0);
-                
+                const tooltipText = "Zadajte mesačné hodnoty spotreby v m³ a ceny v EUR podľa faktúr od dodávateľa vody.";
                 return (
                     <div className="space-y-8">
                         <div className="p-4 border rounded-md space-y-4 bg-slate-50">
@@ -664,9 +679,9 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                                 <label htmlFor="water-meter-number" className="block text-sm font-medium text-slate-700">Číslo merača (fakturačného)</label>
                                 <input type="text" id="water-meter-number" value={data.water.meterNumber} onChange={e => handleWaterChange('meterNumber', e.target.value)} className="mt-1 block w-full md:w-1/2 border-slate-300 rounded-md shadow-sm sm:text-sm bg-white text-black" />
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" title={tooltipText}>
                                 <table className="min-w-full bg-white text-sm rounded-md">
-                                    <thead className="bg-slate-200"><tr><th className="px-2 py-2 text-center font-semibold text-slate-600">Mesiac</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Spotreba (m³)</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Suma (€)</th></tr></thead>
+                                    <thead className="bg-slate-200"><tr><th className="px-2 py-2 text-center font-semibold text-slate-600 flex items-center justify-center">Mesiac <InfoIcon /></th><th className="px-2 py-2 text-left font-semibold text-slate-600">Spotreba (m³)</th><th className="px-2 py-2 text-left font-semibold text-slate-600">Suma (€)</th></tr></thead>
                                     <tbody>
                                         {(data.water.monthlyReadings || []).map((reading, rIdx) => (
                                             <tr key={rIdx} className="border-b last:border-0">
@@ -683,7 +698,7 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                         <div className="pt-6 mt-6 border-t">
                             <h3 className="text-lg font-semibold text-indigo-700">Súvisiace náklady</h3>
                             <div className="p-4 mt-2 border rounded-md bg-slate-50">
-                                <InputField label="Suma stočné" unit="€" name="sewerage-cost" value={data.water.sewerageCost} onChange={v => handleWaterChange('sewerageCost', v)} />
+                                <InputField label="Suma stočné" unit="€" name="sewerage-cost" value={data.water.sewerageCost} onChange={v => handleWaterChange('sewerageCost', v)} tooltip="Celková ročná suma za stočné (odvádzanie odpadových vôd) podľa faktúry." />
                             </div>
                         </div>
                     </div>
@@ -712,7 +727,10 @@ const handleWaterPropertyChange = (field: keyof CalculationData['water'], value:
                         <th className="px-4 py-2 text-right font-semibold text-slate-600">%</th>
                         <th className="px-4 py-2 text-right font-semibold text-slate-600">Merač</th>
                         <th className="px-4 py-2 text-right font-semibold text-slate-600">Faktúra</th>
-                        <th className="px-4 py-2 text-right font-semibold text-slate-600">Pomer</th>
+                        <th className="px-4 py-2 text-right font-semibold text-slate-600 flex items-center justify-end" title="Manuálne zadaný pomer v %, podľa ktorého sa rozdelí celková fakturovaná suma za vodu a stratená voda na zložku TÚV a SV.">
+                            Pomer
+                            <InfoIcon />
+                        </th>
                         <th className="px-4 py-2 text-right font-semibold text-slate-600">Stratená voda</th>
                       </tr>
                     </thead>
