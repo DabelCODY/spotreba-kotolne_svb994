@@ -48,13 +48,32 @@ Aplikáciu môžete jednoducho spustiť ako Docker kontajner:
    docker-compose up -d
    ```
 
-2. **Manuálne (ZimaOS App Store / Custom App):**
-   - **Image:** zostavte si vlastný pomocou priloženého `Dockerfile`
-   - **Porty:** `3000:3000`
-   - **Volume:** `/cesta/k/datam:/app/data` (pre zachovanie databázy)
-   - **Environment:** `DATABASE_PATH=/app/data/database.sqlite`
+2. **Inštalácia cez ZimaOS / CasaOS App Store (Custom App):**
 
-Aplikácia bude dostupná na `http://<ip-adresa-zariadenia>:3000`.
+Skopírujte tento YAML do konfigurácie "Custom App":
+
+```yaml
+name: Spotreba Kotolne React
+services:
+  app:
+    image: ghcr.io/dabelcody/spotreba-kotolne_svb994:latest
+    container_name: kotolna_react
+    ports:
+      - "8080:80" # Aplikácia bude dostupná na porte 8080 tvojho servera
+    volumes:
+      - /DATA/AppData/kotolna:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/database.sqlite
+    restart: always
+x-casaos:
+  author: DabelCODY
+  icon: https://cdn-icons-png.flaticon.com/512/930/930353.png
+  title:
+    en_us: Spotreba Kotolne
+    sk_sk: Spotreba Kotolne
+```
+
+Aplikácia bude dostupná na `http://<ip-adresa-zariadenia>:8080`.
 
 ## Technológie
 - **Frontend:** React, TypeScript, Tailwind CSS, Vite

@@ -25,7 +25,8 @@ COPY --from=builder /app/services ./services
 # Create directory for database
 RUN mkdir -p /app/data
 ENV DATABASE_PATH=/app/data/database.sqlite
+ENV PORT=80
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["npx", "tsx", "server.ts"]
