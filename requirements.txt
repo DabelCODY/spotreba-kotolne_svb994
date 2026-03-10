@@ -1,3 +1,7 @@
 streamlit
-pandas
 google-generativeai
+pandas
+python-dotenv
+# Ak v aplikácii kreslíš grafy, pridaj aj tieto:
+plotly
+matplotlib
