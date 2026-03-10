@@ -1,20 +1,65 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Kalkulačka nákladov kotolne
 
-# Run and deploy your AI Studio app
+Aplikácia na výpočet a archiváciu nákladov na teplo, plyn, elektrinu a vodu pre bytové domy.
 
-This contains everything you need to run your app locally.
+## Funkcie
+- Výpočet energetického výkonu (GJ, kWh)
+- Rozpočítanie nákladov na plyn, elektrinu a vodu
+- Sledovanie spotreby cez hlavné a podružné merače
+- Archív dát podľa rokov v SQLite databáze
+- Export výsledkov
 
-View your app in AI Studio: https://ai.studio/apps/a7efefba-d310-4359-8fb1-b21816bba13d
+## Inštalácia
 
-## Run Locally
+1. Naklonujte repozitár:
+   ```bash
+   git clone https://github.com/vas-uzivatel/kalkulacka-kotolne.git
+   cd kalkulacka-kotolne
+   ```
 
-**Prerequisites:**  Node.js
+2. Nainštalujte závislosti:
+   ```bash
+   npm install
+   ```
 
+3. Pripravte prostredie:
+   - Skopírujte `.env.example` do `.env` (ak sú potrebné API kľúče)
+   ```bash
+   cp .env.example .env
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+4. Spustite aplikáciu:
+   - **Vývojový režim:**
+     ```bash
+     npm run dev
+     ```
+   - **Produkčný režim:**
+     ```bash
+     npm run build
+     npm start
+     ```
+
+## Inštalácia cez Docker (ZimaOS / CasaOS)
+
+Aplikáciu môžete jednoducho spustiť ako Docker kontajner:
+
+1. **Pomocou Docker Compose:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Manuálne (ZimaOS App Store / Custom App):**
+   - **Image:** zostavte si vlastný pomocou priloženého `Dockerfile`
+   - **Porty:** `3000:3000`
+   - **Volume:** `/cesta/k/datam:/app/data` (pre zachovanie databázy)
+   - **Environment:** `DATABASE_PATH=/app/data/database.sqlite`
+
+Aplikácia bude dostupná na `http://<ip-adresa-zariadenia>:3000`.
+
+## Technológie
+- **Frontend:** React, TypeScript, Tailwind CSS, Vite
+- **Backend:** Node.js, Express, SQLite
+- **Nástroje:** tsx (pre beh TypeScript servera)
+
+## Licencia
+MIT

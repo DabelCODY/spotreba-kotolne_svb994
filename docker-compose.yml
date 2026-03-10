@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  kalkulacka-kotolne:
+    build: .
+    container_name: kalkulacka-kotolne
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/data/database.sqlite
+    restart: unless-stopped

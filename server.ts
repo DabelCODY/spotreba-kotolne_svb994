@@ -11,14 +11,14 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
   // Initialize SQLite
   const db = await open({
-    filename: "./database.sqlite",
+    filename: process.env.DATABASE_PATH || "./database.sqlite",
     driver: sqlite3.Database,
   });
 
